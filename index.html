@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>KOVA - Gestor de Planes de Acción</title>
+    <title>KOVA - Gestor Industrial</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1" rel="stylesheet"/>
     
     <script>
-        // URL DE TU SCRIPT DE GOOGLE
-        const API_URL = "https://script.google.com/macros/s/AKfycbwzsLD4iG_BRzSh9uWYe2bCnMTnvauTKLfEhPH4lhq1RhsjYLIoPunU72dO1ZqRgTtrlA/exec";
+        // URL ACTUALIZADA
+        const API_URL = "https://script.google.com/macros/s/AKfycbw8_PKBpRXBWuj31rvCQiIWA0niyaQBeBBil2BwOQ4MToXSALIexwt8WLMQDU-WKLznIQ/exec";
         
         let allData = [];
         let currentTab = 'OPERACIONES';
@@ -20,22 +20,27 @@
             grid.innerHTML = `
                 <div class="col-span-full text-center py-20">
                     <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black mb-4"></div>
-                    <p class="text-gray-500 font-medium">Sincronizando con Google Sheets...</p>
+                    <p class="text-gray-500 font-medium">Sincronizando con KOVA Database...</p>
                 </div>`;
             
             try {
-                // Fetch de datos con manejo de redirección (Google Apps Script usa redirecciones)
+                // Petición al Script de Google
                 const response = await fetch(API_URL);
-                if (!response.ok) throw new Error('Error en la respuesta');
+                
+                if (!response.ok) throw new Error('Error en la red');
+                
                 allData = await response.json();
+                console.log("Datos cargados:", allData);
                 renderCards();
             } catch (error) {
-                console.error("Error capturado:", error);
+                console.error("Error:", error);
                 grid.innerHTML = `
                     <div class="col-span-full text-center py-20">
                         <span class="material-symbols-outlined text-red-500 text-5xl mb-4">cloud_off</span>
                         <p class="text-red-600 font-bold text-xl">Error de Conexión</p>
-                        <p class="text-gray-500 mt-2 max-w-md mx-auto">Asegúrate de haber publicado el Script como "Cualquiera" y de aceptar los permisos de Google.</p>
+                        <p class="text-gray-500 mt-2 max-w-md mx-auto">
+                            Si el error persiste, abre la URL del script en una pestaña nueva para autorizarla y vuelve aquí.
+                        </p>
                         <button onclick="cargarDatos()" class="mt-6 px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">Reintentar conexión</button>
                     </div>`;
             }
@@ -45,42 +50,38 @@
             const grid = document.getElementById('tasks-grid');
             grid.innerHTML = '';
             
-            // Lógica de filtrado:
-            // 1. Debe tener texto en PLAN DE ACCIÓN
-            // 2. El RESPONSABLE debe coincidir con la pestaña (OPERACIONES por defecto si no hay responsable pero hay tarea)
             const filtered = allData.filter(item => {
-                const planAccion = (item['PLAN DE ACCIÓN'] || '').toString().trim();
-                const responsable = (item['RESPONSABLE'] || '').toString().toUpperCase();
+                const plan = (item['PLAN DE ACCIÓN'] || '').toString().trim();
+                const resp = (item['RESPONSABLE'] || '').toString().toUpperCase();
                 
-                if (planAccion === '') return false;
-                
+                if (!plan) return false;
+
                 if (currentTab === 'OPERACIONES') {
-                    // Operaciones ve lo suyo o lo que no tiene responsable asignado pero sí tarea
-                    return responsable === 'OPERACIONES' || responsable === 'FÁBRICA' || responsable === '';
+                    return resp === 'OPERACIONES' || resp === 'FÁBRICA' || resp === '';
                 }
-                return responsable.includes(currentTab);
+                return resp.includes(currentTab);
             });
 
             if (filtered.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full text-center py-20 border-2 border-dashed border-gray-100 rounded-2xl">
-                        <p class="text-gray-400 italic text-lg">No hay tareas pendientes para ${currentTab.toLowerCase()}.</p>
+                        <p class="text-gray-400 italic text-lg">No hay tareas pendientes en ${currentTab.toLowerCase()}.</p>
                     </div>`;
                 return;
             }
 
             filtered.forEach(item => {
-                const totalValue = parseFloat(item['Total']) || 0;
-                const esNegativo = totalValue < 0;
-                const idItem = item['ID'] || 'REF-N/A';
-                const aviso = item['Aviso'] || '📋';
+                const total = parseFloat(item['Total']) || 0;
+                const esNegativo = total < 0;
+                const id = item['ID'] || 'REF';
+                const aviso = item['Aviso'] || '📄';
                 
                 grid.innerHTML += `
-                    <article class="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-xl hover:border-gray-300 transition-all duration-300 group">
-                        <div class="px-4 py-3 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
-                            <span class="font-mono text-[10px] uppercase tracking-wider text-gray-400 font-bold">${idItem}</span>
+                    <article class="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-xl hover:border-gray-400 transition-all duration-300 group">
+                        <div class="px-4 py-3 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                            <span class="font-mono text-[10px] uppercase tracking-wider text-gray-400 font-bold">${id}</span>
                             <span class="font-mono text-xs ${esNegativo ? 'text-red-500 bg-red-50' : 'text-green-600 bg-green-50'} px-2 py-0.5 rounded-full font-bold">
-                                STOCK: ${totalValue}
+                                STOCK: ${total}
                             </span>
                         </div>
                         <div class="p-6 flex-1">
@@ -91,13 +92,13 @@
                                 </h3>
                             </div>
                         </div>
-                        <div class="px-5 py-4 bg-gray-50/50 border-t border-gray-100 flex justify-between items-center">
+                        <div class="px-5 py-4 bg-gray-50/30 border-t border-gray-100 flex justify-between items-center">
                             <div class="flex items-center gap-2 text-gray-400">
-                                <span class="material-symbols-outlined text-sm">assignment_ind</span>
+                                <span class="material-symbols-outlined text-sm">person</span>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">${currentTab}</span>
                             </div>
                             <button class="text-xs font-bold text-black border-b border-black hover:pb-1 transition-all">
-                                DETALLES
+                                VER FICHA
                             </button>
                         </div>
                     </article>
@@ -107,17 +108,13 @@
 
         function switchTab(tabName, element) {
             currentTab = tabName.toUpperCase();
-            
-            // UI Pestañas
             document.querySelectorAll('nav a').forEach(el => {
                 el.className = "text-gray-400 pb-1 hover:text-black transition-colors cursor-pointer font-medium";
             });
             element.className = "text-black border-b-2 border-black pb-1 font-bold cursor-pointer";
-            
             renderCards();
         }
 
-        // Carga inicial
         window.onload = cargarDatos;
     </script>
 
@@ -132,7 +129,7 @@
         <div class="max-w-7xl mx-auto px-8 h-20 flex justify-between items-center">
             <div class="flex items-center gap-4">
                 <div class="bg-black text-white px-2 py-1 font-black text-sm italic rounded">KOVA</div>
-                <h2 class="text-sm font-bold tracking-widest text-gray-900 uppercase">System Ops</h2>
+                <h2 class="text-sm font-bold tracking-widest text-gray-900 uppercase">Ops Hub</h2>
             </div>
             
             <nav class="flex gap-10">
@@ -141,9 +138,11 @@
                 <a onclick="switchTab('Administración', this)" class="text-gray-400 pb-1 hover:text-black transition-colors cursor-pointer font-medium">ADMINISTRACIÓN</a>
             </nav>
 
-            <div class="flex items-center gap-6">
-                <button onclick="cargarDatos()" class="material-symbols-outlined text-gray-400 hover:text-black transition-colors">sync</button>
-                <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200"></div>
+            <div class="flex items-center gap-6 text-gray-400">
+                <button onclick="cargarDatos()" class="material-symbols-outlined hover:text-black transition-colors">refresh</button>
+                <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 overflow-hidden">
+                    <img src="https://ui-avatars.com/api/?name=Luis+Berbegal&background=f3f4f6&color=000" alt="Avatar"/>
+                </div>
             </div>
         </div>
     </header>
@@ -151,21 +150,22 @@
     <main class="max-w-7xl mx-auto w-full p-8 md:p-12 flex-1">
         <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Panel de Control</p>
-                <h1 class="text-5xl font-black text-gray-900 tracking-tighter">Buzón de Acciones</h1>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Resumen Semanal</p>
+                <h1 class="text-5xl font-black text-gray-900 tracking-tighter">Plan de Acción</h1>
             </div>
-            <div class="text-right">
-                <p class="text-sm text-gray-400 font-medium">Actualizado en tiempo real</p>
-                <p class="text-xs text-gray-300">Fuente: Semana20_12W_Standard</p>
+            <div class="text-right border-l-4 border-black pl-6 hidden md:block">
+                <p class="text-sm text-gray-900 font-bold">Semana 20</p>
+                <p class="text-xs text-gray-400 uppercase font-bold tracking-widest">Active Status</p>
             </div>
         </div>
 
         <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            </div>
+            <!-- Loader -->
+        </div>
     </main>
 
     <footer class="p-8 text-center text-[10px] text-gray-300 font-bold uppercase tracking-[0.2em]">
-        KOVA Recording Studio &copy; 2026 - Operational Interface
+        KOVA RECORDING STUDIO - INDUSTRIAL MANAGEMENT INTERFACE
     </footer>
 </body>
 </html>
