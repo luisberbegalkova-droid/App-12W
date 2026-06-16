@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>KOVA - Gestor Industrial</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1" rel="stylesheet"/>
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1"
+        rel="stylesheet" />
+
     <script>
         // URL ACTUALIZADA
         const API_URL = "https://script.google.com/macros/s/AKfycbw8_PKBpRXBWuj31rvCQiIWA0niyaQBeBBil2BwOQ4MToXSALIexwt8WLMQDU-WKLznIQ/exec";
-        
+
         let allData = [];
         let currentTab = 'OPERACIONES';
 
@@ -22,13 +26,11 @@
                     <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-black mb-4"></div>
                     <p class="text-gray-500 font-medium">Sincronizando con KOVA Database...</p>
                 </div>`;
-            
+
             try {
-                // Petición al Script de Google
                 const response = await fetch(API_URL);
-                
                 if (!response.ok) throw new Error('Error en la red');
-                
+
                 allData = await response.json();
                 console.log("Datos cargados:", allData);
                 renderCards();
@@ -49,11 +51,11 @@
         function renderCards() {
             const grid = document.getElementById('tasks-grid');
             grid.innerHTML = '';
-            
+
             const filtered = allData.filter(item => {
                 const plan = (item['PLAN DE ACCIÓN'] || '').toString().trim();
                 const resp = (item['RESPONSABLE'] || '').toString().toUpperCase();
-                
+
                 if (!plan) return false;
 
                 if (currentTab === 'OPERACIONES') {
@@ -71,11 +73,12 @@
             }
 
             filtered.forEach(item => {
-                const total = parseFloat(item['Total']) || 0;
+                // MODIFICADO: Cambiado 'Total' por 'Totales' e 'ID' por 'ID Articulo' según la nueva tabla
+                const total = parseFloat(item['Totales']) || 0;
                 const esNegativo = total < 0;
-                const id = item['ID'] || 'REF';
+                const id = item['ID Articulo'] || 'REF';
                 const aviso = item['Aviso'] || '📄';
-                
+
                 grid.innerHTML += `
                     <article class="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-xl hover:border-gray-400 transition-all duration-300 group">
                         <div class="px-4 py-3 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
@@ -119,8 +122,14 @@
     </script>
 
     <style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        body { font-family: 'Inter', sans-serif; letter-spacing: -0.01em; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.01em;
+        }
     </style>
 </head>
 
@@ -131,17 +140,22 @@
                 <div class="bg-black text-white px-2 py-1 font-black text-sm italic rounded">KOVA</div>
                 <h2 class="text-sm font-bold tracking-widest text-gray-900 uppercase">Ops Hub</h2>
             </div>
-            
+
             <nav class="flex gap-10">
-                <a onclick="switchTab('Operaciones', this)" class="text-black border-b-2 border-black pb-1 font-bold cursor-pointer">OPERACIONES</a>
-                <a onclick="switchTab('Comercial', this)" class="text-gray-400 pb-1 hover:text-black transition-colors cursor-pointer font-medium">COMERCIAL</a>
-                <a onclick="switchTab('Administración', this)" class="text-gray-400 pb-1 hover:text-black transition-colors cursor-pointer font-medium">ADMINISTRACIÓN</a>
+                <a onclick="switchTab('Operaciones', this)"
+                    class="text-black border-b-2 border-black pb-1 font-bold cursor-pointer">OPERACIONES</a>
+                <a onclick="switchTab('Comercial', this)"
+                    class="text-gray-400 pb-1 hover:text-black transition-colors cursor-pointer font-medium">COMERCIAL</a>
+                <a onclick="switchTab('Administración', this)"
+                    class="text-gray-400 pb-1 hover:text-black transition-colors cursor-pointer font-medium">ADMINISTRACIÓN</a>
             </nav>
 
             <div class="flex items-center gap-6 text-gray-400">
-                <button onclick="cargarDatos()" class="material-symbols-outlined hover:text-black transition-colors">refresh</button>
+                <button onclick="cargarDatos()"
+                    class="material-symbols-outlined hover:text-black transition-colors">refresh</button>
                 <div class="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 overflow-hidden">
-                    <img src="https://ui-avatars.com/api/?name=Luis+Berbegal&background=f3f4f6&color=000" alt="Avatar"/>
+                    <img src="https://ui-avatars.com/api/?name=Luis+Berbegal&background=f3f4f6&color=000"
+                        alt="Avatar" />
                 </div>
             </div>
         </div>
@@ -160,7 +174,6 @@
         </div>
 
         <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Loader -->
         </div>
     </main>
 
@@ -168,4 +181,5 @@
         KOVA RECORDING STUDIO - INDUSTRIAL MANAGEMENT INTERFACE
     </footer>
 </body>
+
 </html>
