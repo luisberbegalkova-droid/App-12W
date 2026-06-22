@@ -53,11 +53,8 @@
             grid.innerHTML = '';
 
             const filtered = allData.filter(item => {
-                // CORRECCIÓN: Tu columna real en Sheets se llama "Comentario Previo"
                 const plan = (item['Comentario Previo'] || '').toString().trim();
-
-                // CORRECCIÓN: Tu columna en Sheets se llama "Responsable" (Minúsculas)
-                const resp = (item['Responsable'] || '').toString().toUpperCase();
+                const resp = (item['Responsable'] || '').toString().trim().toUpperCase();
 
                 if (!plan) return false;
 
@@ -69,9 +66,9 @@
 
             if (filtered.length === 0) {
                 grid.innerHTML = `
-    <div class="col-span-full text-center py-20 border-2 border-dashed border-gray-100 rounded-2xl">
-        <p class="text-gray-400 italic text-lg">No hay tareas pendientes en ${currentTab.toLowerCase()}.</p>
-    </div>`;
+                <div class="col-span-full text-center py-20 border-2 border-dashed border-gray-100 rounded-2xl">
+                    <p class="text-gray-400 italic text-lg">No hay tareas pendientes en ${currentTab.toLowerCase()}.</p>
+                </div>`;
                 return;
             }
 
@@ -82,78 +79,33 @@
                 const aviso = item['Aviso'] || '📄';
 
                 grid.innerHTML += `
-    <article class="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-xl hover:border-gray-400 transition-all duration-300 group">
-        <div class="px-4 py-3 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-            <span class="font-mono text-[10px] uppercase tracking-wider text-gray-400 font-bold">${id}</span>
-            <span class="font-mono text-xs ${esNegativo ? 'text-red-500 bg-red-50' : 'text-green-600 bg-green-50'} px-2 py-0.5 rounded-full font-bold">
-                STOCK: ${total}
-            </span>
-        </div>
-        <div class="p-6 flex-1">
-            <div class="flex items-start gap-4">
-                <span class="text-2xl">${aviso}</span>
-                <h3 class="font-bold text-gray-800 leading-tight text-lg group-hover:text-black transition-colors">
-                    ${item['Comentario Previo']}
-                </h3>
-            </div>
-        </div>
-        <div class="px-5 py-4 bg-gray-50/30 border-t border-gray-100 flex justify-between items-center">
-            <div class="flex items-center gap-2 text-gray-400">
-                <span class="material-symbols-outlined text-sm">person</span>
-                <span class="text-[10px] font-bold uppercase tracking-widest">${currentTab}</span>
-            </div>
-            <button class="text-xs font-bold text-black border-b border-black hover:pb-1 transition-all">
-                VER FICHA
-            </button>
-        </div>
-    </article>
-`;
+                <article class="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-xl hover:border-gray-400 transition-all duration-300 group">
+                    <div class="px-4 py-3 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                        <span class="font-mono text-[10px] uppercase tracking-wider text-gray-400 font-bold">${id}</span>
+                        <span class="font-mono text-xs ${esNegativo ? 'text-red-500 bg-red-50' : 'text-green-600 bg-green-50'} px-2 py-0.5 rounded-full font-bold">
+                            STOCK: ${total}
+                        </span>
+                    </div>
+                    <div class="p-6 flex-1">
+                        <div class="flex items-start gap-4">
+                            <span class="text-2xl">${aviso}</span>
+                            <h3 class="font-bold text-gray-800 leading-tight text-lg group-hover:text-black transition-colors">
+                                ${item['Comentario Previo']}
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="px-5 py-4 bg-gray-50/30 border-t border-gray-100 flex justify-between items-center">
+                        <div class="flex items-center gap-2 text-gray-400">
+                            <span class="material-symbols-outlined text-sm">person</span>
+                            <span class="text-[10px] font-bold uppercase tracking-widest">${currentTab}</span>
+                        </div>
+                        <button class="text-xs font-bold text-black border-b border-black hover:pb-1 transition-all">
+                            VER FICHA
+                        </button>
+                    </div>
+                </article>`;
             });
         }
-
-        if (filtered.length === 0) {
-            grid.innerHTML = `
-            <div class="col-span-full text-center py-20 border-2 border-dashed border-gray-100 rounded-2xl">
-                <p class="text-gray-400 italic text-lg">No hay tareas pendientes en ${currentTab.toLowerCase()}.</p>
-            </div>`;
-            return;
-        }
-
-        filtered.forEach(item => {
-            // Mapeo exacto de tus nuevas columnas manuales e importadas
-            const total = parseFloat(item['Totales']) || 0;
-            const esNegativo = total < 0;
-            const id = item['ID Articulo'] || 'REF';
-            const aviso = item['Aviso'] || '📄';
-
-            grid.innerHTML += `
-            <article class="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-xl hover:border-gray-400 transition-all duration-300 group">
-                <div class="px-4 py-3 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                    <span class="font-mono text-[10px] uppercase tracking-wider text-gray-400 font-bold">${id}</span>
-                    <span class="font-mono text-xs ${esNegativo ? 'text-red-500 bg-red-50' : 'text-green-600 bg-green-50'} px-2 py-0.5 rounded-full font-bold">
-                        STOCK: ${total}
-                    </span>
-                </div>
-                <div class="p-6 flex-1">
-                    <div class="flex items-start gap-4">
-                        <span class="text-2xl">${aviso}</span>
-                        <h3 class="font-bold text-gray-800 leading-tight text-lg group-hover:text-black transition-colors">
-                            ${item['PLAN DE ACCIÓN']}
-                        </h3>
-                    </div>
-                </div>
-                <div class="px-5 py-4 bg-gray-50/30 border-t border-gray-100 flex justify-between items-center">
-                    <div class="flex items-center gap-2 text-gray-400">
-                        <span class="material-symbols-outlined text-sm">person</span>
-                        <span class="text-[10px] font-bold uppercase tracking-widest">${currentTab}</span>
-                    </div>
-                    <button class="text-xs font-bold text-black border-b border-black hover:pb-1 transition-all">
-                        VER FICHA
-                    </button>
-                </div>
-            </article>
-        `;
-        });
 
         function switchTab(tabName, element) {
             currentTab = tabName.toUpperCase();
