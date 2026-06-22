@@ -53,8 +53,8 @@
             grid.innerHTML = '';
 
             const filtered = allData.filter(item => {
-                const plan = (item['Comentario Previo'] || '').toString().trim();
-                const resp = (item['Responsable'] || '').toString().trim().toUpperCase();
+                const plan = (item.comentario_previo || '').toString().trim();
+                const resp = (item.responsable || '').toString().trim().toUpperCase();
 
                 if (!plan) return false;
 
@@ -73,13 +73,11 @@
             }
 
             filtered.forEach(item => {
-                // CORRECCIÓN: Aseguramos que lea 'Totales' tal y como viene en el JSON
-                const total = parseFloat(item['Totales']) || 0;
+                const total = parseFloat(item.totales) || 0;
                 const esNegativo = total < 0;
 
-                // CORRECCIÓN: 'ID Articulo' va SIN TILDE para que coincida exactamente con tu objeto de consola
-                const id = item['ID Articulo'] || 'REF';
-                const aviso = item['Aviso'] || '📄';
+                const id = item.id_articulo || 'REF';
+                const aviso = '📄'; // Por defecto si no hay columna de avisos fija
 
                 grid.innerHTML += `
         <article class="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col h-full hover:shadow-xl hover:border-gray-400 transition-all duration-300 group">
@@ -93,7 +91,7 @@
                 <div class="flex items-start gap-4">
                     <span class="text-2xl">${aviso}</span>
                     <h3 class="font-bold text-gray-800 leading-tight text-lg group-hover:text-black transition-colors">
-                        ${item['Comentario Previo']}
+                        ${item.comentario_previo}
                     </h3>
                 </div>
             </div>
